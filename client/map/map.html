@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Map Ekranı</title>
+    <script></script>
+    <link rel="stylesheet" href="map.css"/>
+</head>
+<body>
+<div id="map"></div>
+
+
+<script type="text/javascript">
+
+    let mapwindow;
+    const electron = require("electron");
+    const {ipcRenderer} = electron;
+    var markers = [];
+    var directionsService;
+    var directionsRenderer;
+    var distanceMatrix = [];
+    var delayFactor = 0;
+
+    function initMap() {
+        directionsService = new google.maps.DirectionsService();
+        directionsRenderer = new google.maps.DirectionsRenderer({
+            suppressMarkers: true
+        });
+        mapwindow = new google.maps.Map(document.getElementById("map"), {
+            center: {lat: 40.766334331654626, lng: 29.811424053996785},
+            zoom: 8,
+
+        });
+        directionsRenderer.setMap(mapwindow);
+
+
+    }
+
+
+    function calculateMatrix() {
+        var request = {
+            origin: "",
+            destination: "",
+            travelMode: 'WALKING'
+        };
+
+        markers.forEach((m1, i) => {
+
+            if (!distanceMatrix[i])
+                distanceMatrix[i] = [];
+            markers.forEach((m2, j) => {
+                if (!distanceMatrix[j])
+                    distanceMatrix[j] = [];
+                if (i == j) {
+                    distanceMatrix[i][j] = 0;
+                } else {
+
+                    setTimeout(function () {
+                        request.origin = {
+                            lat: m1.getPosition().lat(),
+                            lng: m1.getPosition().lng()
+                        }
+                        request.destination = {
+                            lat: m2.getPosition().lat(),
+                            lng: m2.getPosition().lng()
+                        }
+                        directionsService.route(request, function (result, status) {
+
+                            if (status === 'OK') {
+                                var directionsData = result.routes[0].legs[0]; // Get data about the mapped route
+                                distanceMatrix[i][j] = directionsData.distance.value;
+                                distanceMatrix[j][i] = directionsData.distance.value;
+                            }
+                        })
+                    }, (i * markers.length + j) * 1000);
+                }
+            })
+        })
+        setTimeout(calculateShortestPath, markers.length * (markers.length - 1) * 1000)
+    }
+
+    function calculateShortestPath() {
+        var indexes = [];
+        for (var i = 0; i < markers.length; i++) {
+            indexes.push(i);
+        }
+        var perms = permutations(indexes)
+        console.log(distanceMatrix)
+        var shortPath;
+
+        var minDist = Number.MAX_SAFE_INTEGER;
+        for (var i = 0; i < perms.length; i++) {
+            var dist = 0;
+            var perm = perms[i];
+            for (var j = 0; j < perm.length - 1; j++) {
+                dist = dist + distanceMatrix[perm[j]][perm[j + 1]];
+            }
+
+            if (dist < minDist) {
+                minDist = dist;
+                shortPath = [];
+                for (var j = 0; j < perm.length; j++) {
+                    shortPath.push(perm[j])
+                }
+            }
+        }
+
+        console.log(shortPath)
+        var request = {
+            origin: markers[0].getPosition(),
+            destination: markers[shortPath.length - 1].getPosition(),
+            waypoints: [],
+            travelMode: 'WALKING'
+        };
+
+        for (var i = 1; i < shortPath.length; i++) {
+            request.waypoints.push({
+                location: markers[i].getPosition().lat() + ", " + markers[i].getPosition().lng(),
+                stopover: true
+            });
+        }
+        console.log(request.waypoints)
+        directionsService.route(request, function (result, status) {
+            console.log(result)
+            if (status === 'OK') {
+                directionsRenderer.setDirections(result)
+            }
+
+        })
+
+    }
+
+
+    const permutations = array => {
+        let permut = [];
+        helperFunction(0, array, permut);
+        return permut;
+    };
+
+    const helperFunction = (i, array, permut) => {
+        if (i === array.length - 1) {
+            permut.push(array.slice());
+        } else {
+            for (let j = i; j < array.length; j++) {
+                swapElements(i, j, array);
+                helperFunction(i + 1, array, permut);
+                swapElements(i, j, array);
+            }
+        }
+    };
+
+    function swapElements(a, b, array) {
+        let temp = array[a];
+        array[a] = array[b];
+        array[b] = temp;
+    }
+
+
+    ipcRenderer.on("oldCargos", function (event, args) {
+        var kargolar = JSON.parse(args);
+        for (var i = 0; i < kargolar.length; i++) {
+            var marker = new google.maps.Marker({
+
+                position: {lat: kargolar[i].lat, lng: kargolar[i].lng},
+                map: mapwindow
+            });
+            markers.push(marker);
+
+
+        }
+        calculateMatrix();
+
+    })
+    ipcRenderer.on("clickCargos", function (event, args) {
+        var cargos = JSON.parse(args);
+        var marker = new google.maps.Marker({
+            position: new google.maps.LatLng(cargos.lat, cargos.lng),
+            map: mapwindow,
+            title: 'hello world',
+        })
+        markers.push(marker);
+        calculateMatrix();
+
+
+    })
+    ipcRenderer.on("deleteFromMap", function (event, args) {
+        var cargo = JSON.parse(args);
+        markers.forEach((marker) => {
+            console.log(args);
+            if (marker.getPosition().lat() == cargo.lat && marker.getPosition().lng() == cargo.lng) {
+
+                marker.setMap(null);
+            }
+        })
+    })
+
+
+</script>
+<script
+        src="https://maps.googleapis.com/maps/api/js?key=YOUR-API-KEY&callback=initMap"
+
+></script>
+</body>
+</html>
+
+

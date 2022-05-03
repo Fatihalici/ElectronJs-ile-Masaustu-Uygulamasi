@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Kargo</title>
+    <link href="mainwindow.css" rel="stylesheet">
+</head>
+<body>
+<div class="title"><h1>Teslimat Durum Ekranı</h1></div>
+
+<ol type="1" id="List">
+</ol>
+
+<div class="kargobilgileri">
+    <div class="Musteri">
+        <label for="text" style="margin-left: -20px;">Musterinin adı</label>
+        <input type="text" id="text" placeholder="Musterinin adı">
+    </div>
+    <br>
+    <div>
+        <label for="xkord">X kordinatı</label>
+        <input type="number" id="xkord" placeholder="X kordinatı">
+    </div>
+    <br>
+    <div>
+        <label for="ykord">Y kordinatı</label>
+        <input type="number" id="ykord" placeholder="Y kordinatı">
+
+    </div>
+    <br>
+</div>
+<div class="button">
+    <input class="button" type="submit" value="Kargoyu Ekle" id="kargoekle">
+</div>
+
+
+<script type="text/javascript">
+    let inputmusteriadi = document.querySelector("#text");
+    let inputlat = document.querySelector("#xkord");
+    let inputlng = document.querySelector("#ykord");
+    let sendcargo = document.querySelector("#kargoekle");
+    let ol = document.querySelector("#List");
+    const myol = document.getElementById("List");
+
+
+    const electron = require("electron");
+    const {ipcRenderer} = electron;
+
+    function addListItem(musteriadi, lat, lng) {
+        let li = document.createElement("li");
+        ol.appendChild(li);
+        li.appendChild(document.createTextNode(musteriadi));
+
+        let deleteButton = document.createElement('button');
+        li.appendChild(deleteButton);
+        myol.appendChild(li);
+        deleteButton.innerHTML = 'Kargoyu sil';
+        deleteButton.classList.add("deleteButton");
+
+        deleteButton.addEventListener('click', event => {
+
+            myol.removeChild(deleteButton.parentNode);
+            ipcRenderer.send('deleteCargo', {
+                musteriadi: musteriadi,
+                lat: lat,
+                lng: lng
+            })
+
+        });
+
+    }
+
+    sendcargo.addEventListener('click', event => {
+        ipcRenderer.send('sendCargo', {
+            musteriadi: inputmusteriadi.value,
+            lat: inputlat.value,
+            lng: inputlng.value
+
+        })
+
+        addListItem(inputmusteriadi.value, inputlat.value, inputlng.value)
+
+
+    })
+    ipcRenderer.on("oldCargos", (event, args) => {
+        var cargos = JSON.parse(args)
+        cargos.forEach((cargo) => {
+            addListItem(cargo.musteriadi, cargo.lat, cargo.lng);
+        })
+    })
+
+
+</script>
+</body>
+
+</html>

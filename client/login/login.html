@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="login.css">
+
+</head>
+<body class="align">
+
+<div class="login">
+
+    <header class="login__header">
+        <h2>
+            <svg class="icon">
+                <use xlink:href="#icon-lock"/>
+            </svg>
+            Sign In
+        </h2>
+    </header>
+
+    <form class="login__form" method="POST">
+
+        <div>
+            <label for="text">Username</label>
+            <input type="text" id="text" name="text" placeholder="Username">
+        </div>
+
+        <div>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="password">
+        </div>
+
+
+        <div>
+            <input class="button" type="button" value="Sign In" id="signIn">
+
+            <input class="button" type="button" value="Sign up" id="signUp">
+        </div>
+
+
+    </form>
+    <script>
+
+        let gosignUp = document.querySelector("#signUp");
+        let signIn = document.querySelector("#signIn");
+        let inputusername = document.querySelector("#text");
+        let inputpassword = document.querySelector("#password");
+        const electron = require("electron");
+        const {ipcRenderer} = electron;
+
+
+        gosignUp.addEventListener("click", () => {
+            ipcRenderer.send("goRegister", "");
+
+        });
+        signIn.addEventListener('click', () => {
+            ipcRenderer.send('login', {
+                username: inputusername.value,
+                password: inputpassword.value
+            })
+
+
+        })
+
+
+    </script>
+</div>
+
+
+</body>
+
+</html>

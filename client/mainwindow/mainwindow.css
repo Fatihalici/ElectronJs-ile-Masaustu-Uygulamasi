@@ -1,0 +1,56 @@
+div.title {
+    position: relative;
+    text-align: center;
+
+}
+
+ol {
+    background: slategray;
+    list-style-type: decimal-leading-zero;
+    list-style-position: inside;
+    margin: 0;
+    padding: 20px;
+}
+
+ol li {
+    background: lightblue;
+    margin: 5px;
+    padding-left: 15px;
+    line-height: 2.2em;
+}
+
+::-webkit-scrollbar {
+    width: 20px;
+}
+
+::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 5px gray;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: grey;
+    border-radius: 10px;
+}
+
+.kargobilgileri {
+
+    margin-top: 10px;
+    position: relative;
+    text-align: center;
+}
+
+.button {
+    margin-top: 5px;
+    padding: 3px;
+
+    position: relative;
+    text-align: center;
+}
+
+.deleteButton {
+    margin-top: 6px;
+    float: right;
+    position: relative;
+    text-align: center;
+}

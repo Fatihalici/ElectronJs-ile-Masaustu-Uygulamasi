@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="register.css">
+
+</head>
+<body class="align">
+
+<div class="login">
+
+    <header class="login__header">
+        <h2>
+            <svg class="icon">
+                <use xlink:href="#icon-lock"/>
+            </svg>
+            Sign Up
+        </h2>
+    </header>
+
+    <form class="login__form" method="POST">
+
+        <div>
+            <label for="text">Username</label>
+            <input type="text" id="text" name="text" placeholder="Username">
+        </div>
+
+        <div>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="password">
+        </div>
+        <div>
+            <label for="password">Re-type Password</label>
+            <input type="password" id="passwordAgain" name="password" placeholder="re-type password">
+        </div>
+
+
+        <div>
+            <input class="button" type="submit" value="Sign up" id="signUp">
+            <input class="button" type="button" value="Sign in" id="signIn">
+
+        </div>
+
+
+    </form>
+    <script type="text/javascript">
+        let gosignIn = document.querySelector("#signIn");
+        let signUp = document.querySelector("#signUp");
+        let inputusername = document.querySelector("#text");
+        let inputpassword = document.querySelector("#password");
+        let inputrepassword = document.querySelector("#passwordAgain");
+        const electron = require("electron");
+        const {ipcRenderer} = electron;
+
+
+        gosignIn.addEventListener("click", () => {
+            ipcRenderer.send("goLogin", "");
+
+        });
+        signUp.addEventListener("click", () => {
+            ipcRenderer.send("register", {
+                username: inputusername.value,
+                password: inputpassword.value,
+                repassword: inputrepassword.value
+            });
+        })
+
+
+    </script>
+</div>
+
+
+</body>
+
+</html>
